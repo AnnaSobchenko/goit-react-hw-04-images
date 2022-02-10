@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Notify } from 'notiflix';
 
 axios.defaults.baseURL = 'https://pixabay.com/api/';
 
@@ -18,7 +19,9 @@ export const getImages = (q = '', page = 1) => {
   return axios
     .get(`?image_type=photo`)
     .then((res) =>{if(!res.data.hits.length)
-    {throw new Error("Not found")}
+    {throw new Error(Notify.failure(
+      '❌ Sorry, there are no images matching your search query. Please try again.',
+    ))}
 return res.data.hits})
     .catch(err => {
       throw err;
