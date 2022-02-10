@@ -1,8 +1,9 @@
 import { Component } from 'react';
-import getImages from 'utils/newApi';
+import { getImages } from 'utils/newApi';
 import ButtonBtn from './ButtonBtn/ButtonBtn';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
+import Modal from './Modal/Modal';
 import Searchbar from './Searchbar/Searchbar';
 import './styles.css';
 
@@ -13,6 +14,12 @@ class App extends Component {
     page: 1,
     isLoading: false,
     error: null,
+    showModal: false,
+    largeImageURL: '',
+  };
+
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
   };
 
   componentDidMount() {
@@ -50,13 +57,30 @@ class App extends Component {
     this.setState(prev => ({ page: prev.page + 1 }));
   };
 
+  // handleLargeImageURL = largeImageURL => {
+  //   this.setState( largeImageURL);
+  //   console.log( largeImageURL);
+  //   this.toggleModal();
+  // };
+  handleLargeImageURL = e => {
+    // this.setState( largeImageURL);
+    console.log(e.target);
+    console.log(e.target.largeImageURL);
+    // this.toggleModal();
+  };
+
   render() {
-    const { dataGallery, isLoading, search, error } = this.state;
+    const { dataGallery, isLoading, search, error, showModal, largeImageURL } =
+      this.state;
+      console.log(dataGallery);
     return (
       <>
         <div className="App">
           <Searchbar changeSearch={this.changeSearch} />
-          <ImageGallery dataGallery={dataGallery} />
+          <ImageGallery
+            dataGallery={dataGallery}
+            handleLargeImageURL={this.handleLargeImageURL}
+          />
         </div>
         {error ? (
           <p>{error}</p>
@@ -64,6 +88,9 @@ class App extends Component {
           <Loader />
         ) : (
           search && <ButtonBtn handleLoadMore={this.handleLoadMore} />
+        )}
+        {showModal && (
+          <Modal  onClose={this.toggleModal}><img src={largeImageURL} alt="" /></Modal>
         )}
       </>
     );
