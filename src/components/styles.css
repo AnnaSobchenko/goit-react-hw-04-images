@@ -170,9 +170,6 @@ img {
 }
 
 .Modal {
-  min-width: 500px;
-  min-height: 500px;
-  background-color: #303f9f;
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 24px);
 }

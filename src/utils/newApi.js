@@ -23,10 +23,3 @@ return res.data.hits})
     .catch(err => {
       throw err;
     });};
-
-    // export const getLargeImage = (id) => {
-    //   setParams({id})
-    //   return axios.get
-    // }
-     
-    // export default getLargeImage;

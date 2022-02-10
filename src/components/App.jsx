@@ -16,6 +16,7 @@ class App extends Component {
     error: null,
     showModal: false,
     largeImageURL: '',
+    currImg: 0,
   };
 
   toggleModal = () => {
@@ -40,9 +41,9 @@ class App extends Component {
   setImages = () => {
     this.setState({ isLoading: true, error: null });
     getImages(this.state.search, this.state.page)
-      .then(dataGallery =>
+      .then(data =>
         this.setState(prev => ({
-          dataGallery: [...prev.dataGallery, ...dataGallery],
+          dataGallery: [...prev.dataGallery, ...data],
         }))
       )
       .catch(error => this.setState({ error: error.message }))
@@ -57,23 +58,21 @@ class App extends Component {
     this.setState(prev => ({ page: prev.page + 1 }));
   };
 
-  // handleLargeImageURL = largeImageURL => {
-  //   this.setState( largeImageURL);
-  //   console.log( largeImageURL);
-  //   this.toggleModal();
-  // };
   handleLargeImageURL = e => {
-    // this.setState( largeImageURL);
-    console.log(e.target);
-    console.log(e.target.largeImageURL);
-    // this.toggleModal();
+    const { dataGallery } = this.state;
+    const img = dataGallery.filter(
+      item => item.webformatURL === e.target.attributes.src.nodeValue
+    );
+    this.setState({
+      currImg: dataGallery.indexOf(img[0]),
+    });
+    this.toggleModal();
   };
 
   render() {
-    const { dataGallery, isLoading, search, error, showModal, largeImageURL } =
+    const { dataGallery, isLoading, search, error, showModal, currImg } =
       this.state;
-      console.log(dataGallery);
-    return (
+       return (
       <>
         <div className="App">
           <Searchbar changeSearch={this.changeSearch} />
@@ -90,7 +89,12 @@ class App extends Component {
           search && <ButtonBtn handleLoadMore={this.handleLoadMore} />
         )}
         {showModal && (
-          <Modal  onClose={this.toggleModal}><img src={largeImageURL} alt="" /></Modal>
+          <Modal onClose={this.toggleModal}>
+            <img
+              src={dataGallery[currImg].largeImageURL}
+              alt={dataGallery[currImg].tags}
+            />
+          </Modal>
         )}
       </>
     );
