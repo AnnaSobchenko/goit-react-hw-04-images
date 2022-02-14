@@ -1,7 +1,5 @@
 import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
 
-
-
 const ImageGallery = ({ dataGallery, handleLargeImageURL }) => {
   return (
     <ul className="ImageGallery">

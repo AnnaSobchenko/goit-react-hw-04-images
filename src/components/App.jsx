@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { getImages } from 'utils/newApi';
 import ButtonBtn from './ButtonBtn/ButtonBtn';
 import ImageGallery from './ImageGallery/ImageGallery';
@@ -7,98 +7,79 @@ import Modal from './Modal/Modal';
 import Searchbar from './Searchbar/Searchbar';
 import './styles.css';
 
-class App extends Component {
-  state = {
-    dataGallery: [],
-    search: '',
-    page: 1,
-    isLoading: false,
-    error: null,
-    showModal: false,
-    largeImageURL: '',
-    currImg: 0,
+const App = () => {
+  const [dataGallery, setDataGallery] = useState([]);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);  
+  const [currImg, setcurrImg] = useState(0);
+
+  const toggleModal = () => {
+    setShowModal(prev => !prev);
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  useEffect(() => {
+    if (search === '') {
+      getImages()
+        .then(res => setDataGallery(res))
+        .catch(error => setError(error.message));
+        return;
+    } 
+    setIsLoading(true);
+    setError(null);
+
+    getImages(search, page)
+      .then(data => setDataGallery(prev => [...prev, ...data]))
+      .catch(error => setError(error.message))
+      .finally(() => setIsLoading(false));
+  }, [search, page]); 
+
+  const changeSearch = search => {
+    setSearch(search);
+    setPage(1);
+    setDataGallery([]);
   };
 
-  componentDidMount() {
-    getImages()
-      .then(dataGallery => this.setState({ dataGallery }))
-      .catch(error => this.setState({ error: error.message }));
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.search !== this.state.search ||
-      prevState.page !== this.state.page
-    ) {
-      this.setImages();
-    }
-  }
-
-  setImages = () => {
-    this.setState({ isLoading: true, error: null });
-    getImages(this.state.search, this.state.page)
-      .then(data =>
-        this.setState(prev => ({
-          dataGallery: [...prev.dataGallery, ...data],
-        }))
-      )
-      .catch(error => this.setState({ error: error.message }))
-      .finally(() => this.setState({ isLoading: false }));
+  const handleLoadMore = () => {
+    setPage(prev => prev + 1);
   };
 
-  changeSearch = search => {
-    this.setState({ search, page: 1, dataGallery: [] });
-  };
-
-  handleLoadMore = () => {
-    this.setState(prev => ({ page: prev.page + 1 }));
-  };
-
-  handleLargeImageURL = e => {
-    const { dataGallery } = this.state;
+  const handleLargeImageURL = e => {
     const img = dataGallery.filter(
       item => item.webformatURL === e.target.attributes.src.nodeValue
     );
-    this.setState({
-      currImg: dataGallery.indexOf(img[0]),
-    });
-    this.toggleModal();
+    setcurrImg(dataGallery.indexOf(img[0]));
+    toggleModal();
   };
 
-  render() {
-    const { dataGallery, isLoading, search, error, showModal, currImg } =
-      this.state;
-       return (
-      <>
-        <div className="App">
-          <Searchbar changeSearch={this.changeSearch} />
-          <ImageGallery
-            dataGallery={dataGallery}
-            handleLargeImageURL={this.handleLargeImageURL}
+  return (
+    <>
+      <div className="App">
+        <Searchbar changeSearch={changeSearch} />
+        <ImageGallery
+          dataGallery={dataGallery}
+          handleLargeImageURL={handleLargeImageURL}
+        />
+      </div>
+      {error ? (
+        <p>{error}</p>
+      ) : isLoading ? (
+        <Loader />
+      ) : (
+        search && <ButtonBtn handleLoadMore={handleLoadMore} />
+      )}
+      {showModal && (
+        <Modal onClose={toggleModal}>
+          <img
+            src={dataGallery[currImg].largeImageURL}
+            alt={dataGallery[currImg].tags}
           />
-        </div>
-        {error ? (
-          <p>{error}</p>
-        ) : isLoading ? (
-          <Loader />
-        ) : (
-          search && <ButtonBtn handleLoadMore={this.handleLoadMore} />
-        )}
-        {showModal && (
-          <Modal onClose={this.toggleModal}>
-            <img
-              src={dataGallery[currImg].largeImageURL}
-              alt={dataGallery[currImg].tags}
-            />
-          </Modal>
-        )}
-      </>
-    );
-  }
-}
+        </Modal>
+      )}
+    </>
+  );
+};
 
 export default App;
